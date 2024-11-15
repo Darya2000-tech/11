@@ -9,7 +9,7 @@ def check_http_response (response, param_to_chek) -> bool:
         logger.warning (f"Assertion error: text pattern {param_to_chek} was not found in response body!")
 
     else: 
-          result = true    
+          result = True    
 
     finally:
         return result      
