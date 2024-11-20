@@ -11,7 +11,7 @@ class CustomLoadShape (LoadTestShape):
 
         case "flixedload":
            stages = [
-                {"duration": 300,"users": 10, "spawn_rate":2}
+                {"duration": 300,"users": 4, "spawn_rate":5}
             ]
         case "stages":
             stages =[

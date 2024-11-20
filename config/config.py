@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 class ScenarioConfig(BaseModel):
     included: bool
     weight: int
+    pacing: int
 class WebToursBaseScenarioConfig(ScenarioConfig):
     ...
 
@@ -18,8 +19,7 @@ class Config(BaseSettings):
     loadshape_type: str = Field ('baseline' , env="LOADSHAPE_TYPE")
     webtours_base: WebToursBaseScenarioConfig
     webtours_cancel: WebToursCancelScenarioConfig
-    pacing: int = Field(5, env="PACING")
-
+    
 class LogConfig():
     logger = logging.getLogger('demo_logger')
     logger.setLevel('DEBUG')

@@ -2,9 +2,9 @@
 from locust import task, SequentialTaskSet, FastHttpUser, HttpUser, constant_pacing, constant_throughput, events
 from config.config import cfg, logger
 from utils.assertion import check_http_response
-from utils.non_test_methods import open_csv_file, generateFlightsDates, generateFlightsDates
+from utils.non_test_methods import open_csv_file, generateFlightsDates, generateFlightsDates, generateRandomCardNumber
 import sys, re, random  
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, quote
 
 class PurchaseFlightTicket (SequentialTaskSet):
 
@@ -131,7 +131,7 @@ class PurchaseFlightTicket (SequentialTaskSet):
 
         self.client.get(
             f'/cgi-bin/reservations.pl?page=welcome',
-            name ="req_02_3_OpenFlightsTab_/cgi-bin/reservations.pl?page=welcome",
+            name ="req_02_2_OpenFlightsTab_/cgi-bin/reservations.pl?page=welcome",
             allow_redirects=False,
             #debug_stream=sys.stderr
         )
@@ -166,8 +166,8 @@ class PurchaseFlightTicket (SequentialTaskSet):
         ) as r_03_00_response:
             check_http_response (r_03_00_response, "Flight departing from")
             logger.info(sys.stderr) 
-            self.outboundFlight = re.search(r"\<input type=\"radio\" name=\"outboundFlight\" value=\"(.*)\">" , r_03_00_response.text).group(1)
-
+            self.outboundFlight = re.search(r"name=\"outboundFlight\" value=\"(.*)\" checked=\"checked\"" , r_03_00_response.text).group(1)
+            logger.info(f"____self.outboundFligh:{self.outboundFligh}")
 
     @task
     def uc_04_ChooseFlightOptions(self):
@@ -190,7 +190,7 @@ class PurchaseFlightTicket (SequentialTaskSet):
 
     @task
     def uc_05_ConfirmFlightBooking(self):
-        r05_00_body = f"firstName={self.firstName}&lastName={self.lastName}&address1={quote_plus(self.address1)}&address2={quote_plus(self.address2)}&pass1={quote_plus(self.firstName+ '' +self.lastName)}&creditCard={generateFlightsDates()}&expDate={self.expDate}&oldCCOption=&numPassengers=1&seatType={self.seat_type}&seatPref={self.seat_pref}&outboundFlight={quote_plus(self.outboundFlight)}&advanceDiscount=0&returnFlight=&JSFormSubmit=off&buyFlights.x=50&buyFlights.y=11&.cgifields=saveCC"
+        r05_00_body = f"firstName={self.firstName}&lastName={self.lastName}&address1={quote(self.address1)}&address2={quote(self.address2)}&pass1={quote(self.firstName+ '' +self.lastName)}&creditCard={generateFlightsDates()}&expDate={quote_plus(self.expDate)}&oldCCOption=&numPassengers=1&seatType={self.seat_type}&seatPref={self.seat_pref}&outboundFlight={quote_plus(self.outboundFlight)}&advanceDiscount=0&returnFlight=&JSFormSubmit=off&buyFlights.x=50&buyFlights.y=11&.cgifields=saveCC"
         logger.info(f"uc03 request body: {r05_00_body}")
 
         with self.client.post(
@@ -205,7 +205,7 @@ class PurchaseFlightTicket (SequentialTaskSet):
             logger.info(sys.stderr)     
 
 class WebToursBaseUserClass (FastHttpUser): 
-    wait_time = constant_pacing(cfg.pacing)
+    wait_time = constant_pacing(cfg.webtours_base.pacing)
     host = cfg.url
     logger.info(f'WebToursBaseUserClass started. Host: {host}')
     tasks = [PurchaseFlightTicket]
